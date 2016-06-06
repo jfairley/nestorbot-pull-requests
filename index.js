@@ -34,10 +34,10 @@ module.exports = function (robot) {
     /**
      * search for PRs
      */
-    function listPRs(msg, done, list) {
-        const snippets = robot.brain.get(list);
+    function listPRs(msg, done, team) {
+        const snippets = robot.brain.get(team);
         if (!Array.isArray(snippets)) {
-            return listDoesNotExist(msg, list, done);
+            return teamDoesNotExist(msg, team, done);
         }
         return fetchOrgIssues(robot)
             .then(
@@ -76,64 +76,64 @@ module.exports = function (robot) {
     /**
      * create a new list of snippets
      */
-    function newTeam(msg, done, list) {
-        if (Array.isArray(robot.brain.get(list))) {
-            return msg.send(`Error: List already exists. See \`${msg.match[1]} details ${list}\`.`, done);
+    function newTeam(msg, done, team) {
+        if (Array.isArray(robot.brain.get(team))) {
+            return msg.send(`Error: Team already exists. See \`${msg.match[1]} details ${team}\`.`, done);
         }
 
-        robot.brain.set(list, []);
-        msg.send(`Created list: ${list}!`, done);
+        robot.brain.set(team, []);
+        msg.send(`Created team: ${team}!`, done);
     }
 
     /**
      * delete a list of snippets
      */
-    function removeTeam(msg, done, list) {
-        robot.brain.set(list, undefined);
-        msg.send(`Removed list: ${list}!`, done);
+    function removeTeam(msg, done, team) {
+        robot.brain.set(team, undefined);
+        msg.send(`Removed team: ${team}!`, done);
     }
 
     /**
      * show details for a list of snippets
      */
-    function teamDetails(msg, done, list) {
-        const snippets = robot.brain.get(list);
+    function teamDetails(msg, done, team) {
+        const snippets = robot.brain.get(team);
         if (!Array.isArray(snippets)) {
-            return listDoesNotExist(msg, list, done)
+            return teamDoesNotExist(msg, team, done)
         }
 
-        msg.send(`Details for ${list}:\n${snippets.map(snippet => ` - ${snippet}`).join('\n')}`, done);
+        msg.send(`Details for ${team}:\n${snippets.map(snippet => ` - ${snippet}`).join('\n')}`, done);
     }
 
     /**
-     * add a snippet to a list
+     * add a snippet to a team
      */
-    function addSnippet(msg, done, newSnippet, list) {
-        const snippets = robot.brain.get(list);
+    function addSnippet(msg, done, newSnippet, team) {
+        const snippets = robot.brain.get(team);
         if (!Array.isArray(snippets)) {
-            return listDoesNotExist(msg, list, done);
+            return teamDoesNotExist(msg, team, done);
         }
 
-        robot.brain.set(list, _.uniq(_.flatten([snippets, newSnippet])));
-        msg.send(`Added ${newSnippet} to ${list}!`, done);
+        robot.brain.set(team, _.uniq(_.flatten([snippets, newSnippet])));
+        msg.send(`Added ${newSnippet} to ${team}!`, done);
     }
 
     /**
-     * remove a snippet from a list
+     * remove a snippet from a team
      */
-    function removeSnippet(msg, done, removedSnippet, list) {
-        const snippets = robot.brain.get(list);
+    function removeSnippet(msg, done, removedSnippet, team) {
+        const snippets = robot.brain.get(team);
         if (!Array.isArray(snippets)) {
-            return listDoesNotExist(msg, list, done);
+            return teamDoesNotExist(msg, team, done);
         }
 
-        robot.brain.set(list, _.without(snippets, removedSnippet));
-        msg.send(`Removed ${removedSnippet} from ${list}!`, done);
+        robot.brain.set(team, _.without(snippets, removedSnippet));
+        msg.send(`Removed ${removedSnippet} from ${team}!`, done);
     }
 };
 
-function listDoesNotExist(msg, list, done) {
-    return msg.send(`Error: List does not exist. See \`${msg.match[1]} new list ${list}\`.`, done);
+function teamDoesNotExist(msg, team, done) {
+    return msg.send(`Error: Team does not exist. See \`${msg.match[1]} new team ${team}\`.`, done);
 }
 
 /**
