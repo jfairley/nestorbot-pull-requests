@@ -9,6 +9,7 @@ A custom bot application for [Slack](https://slack.com/) built with [Nestorbot](
 - `pulls details` - show all teams
 - `pulls add team my-team` - add a team called "my-team"
 - `pulls remove team my-team` - remove a team called "my-team"
+- `pulls rename team my-team to my-new-team` - rename a team called "my-team" to "my-new-team"
 - `pulls details my-team` - show the snippets for "my-team"
 - `pulls add snippet foo to my-team` - add "foo" as a snippet for "my-team"
 - `pulls remove snippet foo from my-team` - remove "foo" as a snippet for "my-team"

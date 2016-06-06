@@ -9,6 +9,7 @@ module.exports = function (robot) {
         {pattern: /^new team (.*)/i, callback: newTeam},
         {pattern: /^delete team (.*)/i, callback: removeTeam},
         {pattern: /^remove team (.*)/i, callback: removeTeam},
+        {pattern: /^rename team (.*) to (.*)/i, callback: renameTeam},
         {pattern: /^details (.*)/i, callback: teamDetails},
         {pattern: /^add snippet (.*) to (.*)/i, callback: addSnippet},
         {pattern: /^new snippet (.*) to (.*)/i, callback: addSnippet},
@@ -74,7 +75,7 @@ module.exports = function (robot) {
     }
 
     /**
-     * create a new list of snippets
+     * create a new team
      */
     function newTeam(msg, done, team) {
         if (Array.isArray(robot.brain.get(team))) {
@@ -86,11 +87,25 @@ module.exports = function (robot) {
     }
 
     /**
-     * delete a list of snippets
+     * delete a team
      */
     function removeTeam(msg, done, team) {
         robot.brain.set(team, undefined);
         msg.send(`Removed team: ${team}!`, done);
+    }
+
+    /**
+     * rename a team
+     */
+    function renameTeam(msg, done, oldTeam, newTeam) {
+        var snippets = robot.brain.get(oldTeam);
+        if (Array.isArray(snippets)) {
+            return msg.send(`Error: Team already exists. See \`${msg.match[1]} details ${oldTeam}\`.`, done);
+        }
+
+        robot.brain.set(newTeam, snippets);
+        robot.brain.set(oldTeam, undefined);
+        msg.send(`Renamed team ${oldTeam} to ${newTeam}!`, done);
     }
 
     /**
