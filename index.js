@@ -4,16 +4,17 @@ var _ = require('lodash');
 
 module.exports = function (robot) {
     const actions = [
-        {pattern: /add team (.*)/i, callback: newTeam},
-        {pattern: /new team (.*)/i, callback: newTeam},
-        {pattern: /delete team (.*)/i, callback: removeTeam},
-        {pattern: /remove team (.*)/i, callback: removeTeam},
-        {pattern: /details (.*)/i, callback: teamDetails},
-        {pattern: /add snippet (.*) to (.*)/i, callback: addSnippet},
-        {pattern: /new snippet (.*) to (.*)/i, callback: addSnippet},
-        {pattern: /delete snippet (.*) from (.*)/i, callback: removeSnippet},
-        {pattern: /remove snippet (.*) from (.*)/i, callback: removeSnippet},
-        {pattern: /(.*)/i, callback: listPRs}
+        {pattern: /^details$/i, callback: details},
+        {pattern: /^add team (.*)/i, callback: newTeam},
+        {pattern: /^new team (.*)/i, callback: newTeam},
+        {pattern: /^delete team (.*)/i, callback: removeTeam},
+        {pattern: /^remove team (.*)/i, callback: removeTeam},
+        {pattern: /^details (.*)/i, callback: teamDetails},
+        {pattern: /^add snippet (.*) to (.*)/i, callback: addSnippet},
+        {pattern: /^new snippet (.*) to (.*)/i, callback: addSnippet},
+        {pattern: /^delete snippet (.*) from (.*)/i, callback: removeSnippet},
+        {pattern: /^remove snippet (.*) from (.*)/i, callback: removeSnippet},
+        {pattern: /^(.*)/i, callback: listPRs}
     ];
 
 
@@ -65,6 +66,14 @@ module.exports = function (robot) {
     }
 
     /**
+     * show details for the bot
+     */
+    function details(msg, done) {
+        const teams = robot.brain.data._private;
+        msg.send(`Configured teams:\n${_.keys(teams).map(key => ` - ${key}`).join('\n')}`, done);
+    }
+
+    /**
      * create a new list of snippets
      */
     function newTeam(msg, done, list) {
@@ -93,7 +102,7 @@ module.exports = function (robot) {
             return listDoesNotExist(msg, list, done)
         }
 
-        msg.send(`Details for ${list}:\n${JSON.stringify(snippets, null, 2)}`, done);
+        msg.send(`Details for ${list}:\n${snippets.map(snippet => ` - ${snippet}`).join('\n')}`, done);
     }
 
     /**
