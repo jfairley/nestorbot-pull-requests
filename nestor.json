@@ -1,0 +1,12 @@
+{
+  "name": "Levels Beyond - Open Pull Requests",
+  "description": "List all open LB pull requests relevant to you",
+  "permalink": "pulls",
+  "environment_keys": {
+    "HUBOT_GITHUB_TOKEN": {
+      "required": true,
+      "mode": "oauth",
+      "extract_from": "token"
+    }
+  }
+}
