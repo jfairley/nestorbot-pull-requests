@@ -6,6 +6,7 @@ A custom bot application for [Slack](https://slack.com/) built with [Nestorbot](
 ## Bot Usage (in Slack)
 
 - `pulls help` - display this message
+- `pulls details` - show all teams
 - `pulls add team my-team` - add a team called "my-team"
 - `pulls remove team my-team` - remove a team called "my-team"
 - `pulls details my-team` - show the snippets for "my-team"
