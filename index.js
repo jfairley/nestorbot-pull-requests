@@ -195,8 +195,8 @@ function bodyToLinks(body, snippets) {
             snippets.some(snippet =>
                 -1 < resp.title.indexOf(snippet)
                 || -1 < resp.body.indexOf(snippet)
-                || _.isEqual(_.get('assignee.login'), _.trim(snippet, ' @'))
-                || _.isEqual(_.get('user.login'), _.trim(snippet, ' @'))
+                || _.isEqual(_.get(resp, 'assignee.login'), _.trim(snippet, ' @'))
+                || _.isEqual(_.get(resp, 'user.login'), _.trim(snippet, ' @'))
             )
         )
         .map(respToLink);
