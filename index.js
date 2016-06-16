@@ -4,22 +4,29 @@ var _ = require('lodash');
 
 module.exports = function (robot) {
     const actions = [
-        {pattern: /^details$/i, callback: details},
-        {pattern: /^add team (.*)/i, callback: newTeam},
-        {pattern: /^new team (.*)/i, callback: newTeam},
-        {pattern: /^delete team (.*)/i, callback: removeTeam},
-        {pattern: /^remove team (.*)/i, callback: removeTeam},
-        {pattern: /^rename team (.*) to (.*)/i, callback: renameTeam},
-        {pattern: /^details (.*)/i, callback: teamDetails},
-        {pattern: /^add snippet (.*) to (.*)/i, callback: addSnippet},
-        {pattern: /^new snippet (.*) to (.*)/i, callback: addSnippet},
-        {pattern: /^delete snippet (.*) from (.*)/i, callback: removeSnippet},
-        {pattern: /^remove snippet (.*) from (.*)/i, callback: removeSnippet},
-        {pattern: /^(.*)/i, callback: listPRs}
+        {pattern: /^$/i, callback: listPRsForUser},
+        {pattern: /^ list$/i, callback: listTeams},
+        {pattern: /^ add team (.*)$/i, callback: newTeam},
+        {pattern: /^ new team (.*)$/i, callback: newTeam},
+        {pattern: /^ username (.*)$/i, callback: newTeamForUser},
+        {pattern: /^ delete team (.*)$/i, callback: removeTeam},
+        {pattern: /^ remove team (.*)$/i, callback: removeTeam},
+        {pattern: /^ rename team (.*) to (.*)$/i, callback: renameTeam},
+        {pattern: /^ details (.*)$/i, callback: teamDetails},
+        {pattern: /^ details$/i, callback: teamDetailsForUser},
+        {pattern: /^ add snippet (.*) to (.*)$/i, callback: addSnippet},
+        {pattern: /^ add snippet (.*)$/i, callback: addSnippetForUser},
+        {pattern: /^ new snippet (.*) to (.*)$/i, callback: addSnippet},
+        {pattern: /^ new snippet (.*)$/i, callback: addSnippetForUser},
+        {pattern: /^ delete snippet (.*) from (.*)$/i, callback: removeSnippet},
+        {pattern: /^ delete snippet (.*)$/i, callback: removeSnippetForUser},
+        {pattern: /^ remove snippet (.*) from (.*)$/i, callback: removeSnippet},
+        {pattern: /^ remove snippet (.*)$/i, callback: removeSnippetForUser},
+        {pattern: /^ (.*)$/i, callback: listPRs}
     ];
 
 
-    robot.respond(/(pulls|prs) (.*)/i, (msg, done) => {
+    robot.respond(/(pulls|prs)(.*)/i, (msg, done) => {
         var pattern = msg.match[2];
         for (var i = 0; i < actions.length; i++) {
             var action = actions[i];
@@ -29,8 +36,21 @@ module.exports = function (robot) {
             }
         }
 
-        msg.send('Error: Unknown command', done);
+        msg.send('Error: Unknown command `' + msg.message.text + '`', done);
     });
+
+    /**
+     * search for PRs for the current user
+     */
+    function listPRsForUser(msg, done) {
+        const userId = getUserId(msg);
+        const snippets = robot.brain.get(userId);
+        if (!Array.isArray(snippets)) {
+            return provideUsername(msg, done);
+        }
+
+        return listPRs(msg, done, userId);
+    }
 
     /**
      * search for PRs
@@ -67,11 +87,21 @@ module.exports = function (robot) {
     }
 
     /**
-     * show details for the bot
+     * show configured teams
      */
-    function details(msg, done) {
+    function listTeams(msg, done) {
         const teams = robot.brain.data._private;
         msg.send(`Configured teams:\n${_.keys(teams).map(key => ` - ${key}`).join('\n')}`, done);
+    }
+
+    /**
+     * create a team for the current user and add the github username as a snippet
+     */
+    function newTeamForUser(msg, done, snippet) {
+        const userId = getUserId(msg);
+        const snippets = robot.brain.get(userId) || [];
+        robot.brain.set(userId, flatten(snippets, snippet));
+        msg.send(`Github username registered: \`${snippet}\`!`, done);
     }
 
     /**
@@ -109,6 +139,19 @@ module.exports = function (robot) {
     }
 
     /**
+     * show details for the current user
+     */
+    function teamDetailsForUser(msg, done) {
+        const userId = getUserId(msg);
+        const snippets = robot.brain.get(userId);
+        if (!Array.isArray(snippets)) {
+            return provideUsername(msg, done);
+        }
+
+        msg.send(`Details:\n${snippets.map(snippet => ` - ${snippet}`).join('\n')}`, done);
+    }
+
+    /**
      * show details for a list of snippets
      */
     function teamDetails(msg, done, team) {
@@ -121,6 +164,20 @@ module.exports = function (robot) {
     }
 
     /**
+     * add a snippet for the current user
+     */
+    function addSnippetForUser(msg, done, newSnippet) {
+        const userId = getUserId(msg);
+        const snippets = robot.brain.get(userId);
+        if (!Array.isArray(snippets)) {
+            return provideUsername(msg, done);
+        }
+
+        robot.brain.set(userId, flatten(snippets, userId));
+        msg.send(`Added ${newSnippet}!`, done);
+    }
+
+    /**
      * add a snippet to a team
      */
     function addSnippet(msg, done, newSnippet, team) {
@@ -129,8 +186,22 @@ module.exports = function (robot) {
             return teamDoesNotExist(msg, team, done);
         }
 
-        robot.brain.set(team, _.uniq(_.flatten([snippets, newSnippet])));
+        robot.brain.set(team, flatten(snippets, newSnippet));
         msg.send(`Added ${newSnippet} to ${team}!`, done);
+    }
+
+    /**
+     * remove a snippet for the current user
+     */
+    function removeSnippetForUser(msg, done, removedSnippet) {
+        const userId = getUserId(msg);
+        const snippets = robot.brain.get(userId);
+        if (!Array.isArray(snippets)) {
+            return provideUsername(msg, done);
+        }
+
+        robot.brain.set(userId, _.without(snippets, removedSnippet));
+        msg.send(`Removed ${removedSnippet}!`, done);
     }
 
     /**
@@ -147,8 +218,23 @@ module.exports = function (robot) {
     }
 };
 
+/**
+ * get the ID of the user sending the message
+ */
+function getUserId(msg) {
+    return msg.message.user.id;
+}
+
+function provideUsername(msg, done) {
+    return msg.send(`Please provide your username: \`pulls username <github username>\``, done);
+}
+
 function teamDoesNotExist(msg, team, done) {
     return msg.send(`Error: Team does not exist. See \`${msg.match[1]} new team ${team}\`.`, done);
+}
+
+function flatten() {
+    return _.uniq(_.flatten(arguments));
 }
 
 /**
