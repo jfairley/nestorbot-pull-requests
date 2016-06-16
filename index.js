@@ -101,7 +101,10 @@ module.exports = function (robot) {
         const userId = getUserId(msg);
         const snippets = robot.brain.get(userId) || [];
         robot.brain.set(userId, flatten(snippets, snippet));
-        msg.send(`Github username registered: \`${snippet}\`!`, done);
+        return msg.send(`Github username registered: \`${snippet}\`! From now on, just type \'pulls\' to see your issues.`)
+            .then(function () {
+                return listPRsForUser(msg, done);
+            });
     }
 
     /**
