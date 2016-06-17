@@ -176,7 +176,7 @@ module.exports = function (robot) {
             return provideUsername(msg, done);
         }
 
-        robot.brain.set(userId, flatten(snippets, userId));
+        robot.brain.set(userId, flatten(snippets, newSnippet));
         msg.send(`Added ${newSnippet}!`, done);
     }
 
