@@ -2,6 +2,24 @@
 
 A custom bot application for [Slack](https://slack.com/) built with [Nestorbot](https://www.asknestor.me/) to show relevant organization issues and pull requests.
 
+## What It Does
+
+This bot script fetches all open Github issues and pull requests for the levelsbeyond organization using the [Github APIs](https://developer.github.com/v3/issues/#list-issues). It parses each issue for relevant "snippets" of text and messages back to you any matches. Think of it like piping to `grep`.
+
+### What is a Snippet?
+
+A "snippet" is simply a piece of text.
+
+### What is a Team?
+
+A "team" a grouping of snippets. You can create a team for yourself (see `User Commands`) or for your team (see `Team Commands`).
+
+### How Do I Use It?
+
+You can interact with nestorbot directly by sending a direct message in Slack to `nestorbot`. Alternatively, within a channel, you can tag `@nestorbot` in your command. Just be sure to invite `nestorbot` to the channel.
+
+If you want to experiment, try out any of the commands as a direct message to `nestorbot`. Nothing is permanent, and you won't break it. :wink:
+
 
 ## Bot Usage (in Slack)
 
@@ -26,12 +44,12 @@ A custom bot application for [Slack](https://slack.com/) built with [Nestorbot](
 - `pulls add snippet foo to my-team` - add "foo" as a snippet for "my-team"
 - `pulls remove snippet foo from my-team` - remove "foo" as a snippet for "my-team"
 
-All commands must be directed to `@nestorbot`.
+All commands must be directed to `@nestorbot` when used in a channel.
 
 
 ## Development
 
-Nestorbot comes with a CLI tool for local development.
+Nestorbot works just like any Node application. It comes with a CLI tool for local development. Contributions welcome!
 
 ```sh
 # install
